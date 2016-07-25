@@ -1,0 +1,7 @@
+.cache/*
+build/*
+.*.swp
+*.o
+*.pyc
+*.so
+.gdb_history
