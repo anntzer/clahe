@@ -32,10 +32,9 @@ def clahe(dtype[:, :] img_orig,
         size_t nx = img.shape[0], ny = img.shape[1], x0, y0, \
             x, y, hkx = kx // 2, hky = ky // 2, kxy = kx * ky, \
             val, viter, \
-            nvals = orig_vals.shape[0], max_val_p1 = orig_vals[nvals - 1], \
-            count_clip = <size_t>(kx * ky * clip_limit), clip_sum
+            nvals = orig_vals.shape[0], max_val_p1 = orig_vals[nvals - 1]
+        double count_clip = clip_limit * kx * ky / nvals, clip_sum, clip_psum
         size_t[::1] hist = np.zeros(nvals, np.uintp)
-        double clip_psum
         double[:, ::1] out = np.zeros_like(img, np.double)
     for x0 in range(nx - kx):
         hist[:] = 0
