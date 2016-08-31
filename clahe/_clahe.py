@@ -2,8 +2,7 @@ import numpy as np
 
 from . import _clahe_impl
 
-from utils import timed
-@timed
+
 def clahe(img, win_shape, clip_limit):
     """Contrast-limited adaptive histogram equalization.
     """
@@ -14,8 +13,13 @@ def clahe(img, win_shape, clip_limit):
     win_shape = list(win_shape)
     win_shape[0], win_shape[largest_dim] = win_shape[largest_dim], win_shape[0]
     img = np.pad(img, [(sz, sz) for sz in win_shape], "reflect")
-    # res = _clahe_impl.clahe(img, *win_shape, clip_limit)
-    res = _clahe_nd(img, win_shape, clip_limit)
+    if img.ndim == 2:
+        res = _clahe_impl.clahe(img[..., None], *win_shape, 1, clip_limit)[..., 0]
+    elif img.ndim == 3:
+        res = _clahe_impl.clahe(img, *win_shape, clip_limit)
+    else:
+        raise TypeError("Wrong dimensionality")
+    # res = _clahe_nd(img, win_shape, clip_limit)
     return np.swapaxes(res[tuple(slice(sz, -sz) for sz in win_shape)],
                        0, largest_dim)
 
