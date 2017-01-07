@@ -19,6 +19,8 @@ ctypedef fused dtype:
     np.npy_int16
     np.npy_uint32
     np.npy_int32
+    np.npy_uint64
+    np.npy_int64
 
 
 def clahe(dtype[:, :, :] img,
@@ -51,7 +53,7 @@ def clahe(dtype[:, :, :] img,
                 clip_sum = 0
                 for viter in range(val):
                     clip_sum += min(hist[viter], count_clip)
-                clip_psum = clip_sum + min(hist[val] / 2., count_clip)
+                clip_psum = clip_sum + min(hist[val], count_clip) / 2.
                 for viter in range(val, nvals):
                     clip_sum += min(hist[viter], count_clip)
                 out[x0 + hwx, y0 + hwy, z0 + hwz] = (
