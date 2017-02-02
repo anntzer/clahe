@@ -6,5 +6,5 @@ if __name__ == "__main__":
     setup(
         name="clahe",
         ext_modules=cythonize("**/*.pyx"),
-        packages=find_packages(),
+        packages=find_packages(include=["clahe", "clahe.*"]),
     )

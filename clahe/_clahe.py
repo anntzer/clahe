@@ -12,7 +12,7 @@ def clahe(img, win_shape, clip_limit, *, _fast=True):
     img = np.swapaxes(img, 0, largest_dim)
     win_shape = list(win_shape)
     win_shape[0], win_shape[largest_dim] = win_shape[largest_dim], win_shape[0]
-    img = np.pad(img, [(sz, sz) for sz in win_shape], "reflect")
+    img = np.pad(img, [((sz - 1) // 2, sz // 2) for sz in win_shape], "reflect")
     if _fast:
         if img.ndim == 2:
             res = _clahe_impl.clahe(
@@ -23,8 +23,10 @@ def clahe(img, win_shape, clip_limit, *, _fast=True):
             raise TypeError("Wrong dimensionality")
     else:
         res = _clahe_nd(img, win_shape, clip_limit)
-    return np.swapaxes(res[tuple(slice(sz, -sz) for sz in win_shape)],
-                       0, largest_dim)
+    return np.swapaxes(
+        res[tuple(np.s_[(sz - 1) // 2 : -(sz // 2) or None]
+                  for sz in win_shape)],
+        0, largest_dim)
 
 
 def _clahe_nd(img, win_shape, clip_limit, multiplicative=False):
@@ -42,13 +44,14 @@ def _clahe_nd(img, win_shape, clip_limit, multiplicative=False):
 
     # Update on the *first* dimension in the inner loop in order to get a
     # contiguous array in the 2D case.
-    for nndi in np.ndindex(*(img.shape - win_shape)[1:]):
+    for nndi in np.ndindex(*np.array(img.shape - win_shape)[1:] + 1):
         img_slice = (
             img_ord[tuple([slice(None)]
                           + [slice(i, i + w) for i, w in zip(nndi, win_shape[1:])])])
-        hist = bincount(img_slice[:win_shape[0]])
-        for idx in range(img.shape[0] - win_shape[0]):
-            ndi = tuple(((idx,) + nndi) + win_shape // 2)
+        hist = bincount(img_slice[:win_shape[0] - 1])
+        for idx in range(img.shape[0] - win_shape[0] + 1):
+            hist += bincount(img_slice[idx + win_shape[0] - 1])
+            ndi = tuple(((idx,) + nndi) + (win_shape - 1) // 2)
             # Limit contrast.
             np.minimum(hist, count_clip, buf[1:])
             val = img_ord[ndi]
@@ -59,9 +62,8 @@ def _clahe_nd(img, win_shape, clip_limit, multiplicative=False):
                 clip_psum / clip_sum
                 if multiplicative else
                 (clip_psum
-                 + (win_size - clip_sum) * (orig_vals[val] + .5) / orig_vals[-1])
+                 + (win_size - clip_sum) * (orig_vals[val] + .5) / (orig_vals[-1] + 1))
                 / win_size)
             hist -= bincount(img_slice[idx])
-            hist += bincount(img_slice[idx + win_shape[0]])
 
     return out

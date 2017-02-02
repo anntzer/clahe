@@ -1,4 +1,4 @@
 (Exact) contrast-limited adaptive histogram equalization
 ========================================================
 
-Install with `pip install .`, as usual.  Only tested on Python 3.
+Install with `pip install .` and test with `pytest`.  Python3 only.
