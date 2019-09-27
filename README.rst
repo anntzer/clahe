@@ -1,4 +1,11 @@
 (Exact) contrast-limited adaptive histogram equalization
 ========================================================
 
-Install with ``pip install .`` and test with ``pytest``.  Python3 only.
+As usual, install using pip:
+
+.. code-block:: sh
+
+   $ pip install .  # from source checkout
+   $ pip install git+https://github.com/anntzer/clahe  # from Github
+
+Run tests with pytest.
