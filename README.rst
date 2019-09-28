@@ -1,5 +1,5 @@
-(Exact) contrast-limited adaptive histogram equalization
-========================================================
+Exact contrast-limited adaptive histogram equalization
+======================================================
 
 As usual, install using pip:
 
