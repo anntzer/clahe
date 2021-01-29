@@ -19,3 +19,7 @@ Run tests with pytest.
 This package uses a simple moving window implementation.  It may be worth
 trying an implementation based on Perreault, S. & Hebert, P., *Median Filtering
 in Constant Time* (2007).
+
+See also the `discussion on the scikit-image issue tracker`__.
+
+.. __: https://github.com/scikit-image/scikit-image/issues/2219#issuecomment-516791949

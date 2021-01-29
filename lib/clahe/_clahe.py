@@ -4,7 +4,23 @@ from . import _clahe_impl
 
 
 def clahe(img, win_shape, clip_limit, *, _fast=True):
-    """Contrast-limited adaptive histogram equalization."""
+    """
+    Contrast-limited adaptive histogram equalization.
+
+    Parameters
+    ----------
+    img : int array
+        Input image.
+    win_shape : int sequence
+        Shape of the contextual region.  Its length must match the
+        dimensionality of *img*.
+    clip_limit : float
+        Clipping limit.
+    _fast : bool, default: True
+        Whether to use the fast (Cython) implementation, which is limited to
+        2 or 3D inputs, or the slow (Python) implementation, which can handle
+        any dimensionality.
+    """
     # Bring the largest dimension to the front to optimize the in-loop
     # histogram updates.
     largest_dim = np.argmax(win_shape)
