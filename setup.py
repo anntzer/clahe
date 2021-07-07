@@ -1,17 +1,11 @@
-from setuptools import Extension, find_packages, setup
-from setuptools.command.build_ext import build_ext
+from setupext import find_namespace_packages, setup
 
 
-class build_ext(build_ext):
-    def finalize_options(self):
-        from Cython.Build import cythonize
-        import numpy as np
-
-        self.distribution.ext_modules[:] = cythonize("**/*.pyx")
-        for ext in self.distribution.ext_modules:
-            ext.include_dirs = [np.get_include()]
-
-        super().finalize_options()
+@setup.add_extensions
+def make_extension():
+    from pybind11.setup_helpers import Pybind11Extension
+    yield Pybind11Extension(
+        "clahe._clahe_impl", ["src/_clahe_impl.cpp"], cxx_std=11)
 
 
 setup(
@@ -26,14 +20,11 @@ setup(
         "License :: OSI Approved :: zlib/libpng License",
         "Programming Language :: Python :: 3",
     ],
-    cmdclass={"build_ext": build_ext},
-    packages=find_packages("lib"),
+    packages=find_namespace_packages("lib"),
     package_dir={"": "lib"},
-    ext_modules=[Extension("", [])],
     python_requires=">=3",
     setup_requires=[
-        "Cython",
-        "numpy",
+        "pybind11>=2.6",
         "setuptools_scm>=3.3",  # fallback_version support.
     ],
     use_scm_version={
