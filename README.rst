@@ -14,7 +14,7 @@ As usual, install using pip:
    $ pip install clahe  # from PyPI
    $ pip install git+https://github.com/anntzer/clahe  # from Github
 
-Run tests with pytest.
+Run tests with unittest (or pytest).
 
 This package uses a simple moving window implementation.  It may be worth
 trying an implementation based on Perreault, S. & Hebert, P., *Median Filtering
