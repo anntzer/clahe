@@ -34,12 +34,12 @@ setup(
     setup_requires=[
         "Cython",
         "numpy",
-        "setuptools_scm",
+        "setuptools_scm>=3.3",  # fallback_version support.
     ],
-    use_scm_version={  # xref __init__.py
+    use_scm_version={
         "version_scheme": "post-release",
         "local_scheme": "node-and-date",
-        "write_to": "lib/clahe/_version.py",
+        "fallback_version": "0+unknown",
     },
     install_requires=[
         "numpy",
