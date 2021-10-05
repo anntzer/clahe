@@ -20,10 +20,10 @@ setup(
     long_description=open("README.rst", encoding="utf-8").read(),
     author="Antony Lee",
     url="https://github.com/anntzer/clahe",
-    license="MIT",
+    license="zlib",
     classifiers=[
         "Development Status :: 4 - Beta",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: zlib/libpng License",
         "Programming Language :: Python :: 3",
     ],
     cmdclass={"build_ext": build_ext},
