@@ -15,11 +15,17 @@ class TestClahe(TestCase):
                 ((2, 3, 3), (3, 3, 3)),
                 (3, (4, 4, 4)),
         ]:
-            np.random.seed(0)
-            img = np.random.randint(0, 256, img_size, np.uint8)
-            clip_limit = .5
-            fast = clahe.clahe(img, win_size, clip_limit)
-            slow = clahe.clahe(img, win_size, clip_limit, _fast=False)
-            assert fast.shape == slow.shape == img.shape
-            # Not clear why it's not exactly equal.
-            assert_array_max_ulp(fast, slow)
+            for dtype in [
+                    np.uint8, np.uint16, np.uint32, np.uint64,
+                    np.int8, np.int16, np.int32, np.int64,
+            ]:
+                np.random.seed(0)
+                info = np.iinfo(dtype)
+                img = np.random.randint(
+                    info.min, info.max, img_size, dtype=dtype)
+                clip_limit = .5
+                fast = clahe.clahe(img, win_size, clip_limit)
+                slow = clahe.clahe(img, win_size, clip_limit, _fast=False)
+                assert fast.shape == slow.shape == img.shape
+                # Not clear why it's not exactly equal.
+                assert_array_max_ulp(fast, slow, 14)
