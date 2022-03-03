@@ -14,13 +14,15 @@ py::array_t<double> clahe(
   auto np = py::module::import("numpy");
   auto py_orig_vals = py::object{np.attr("unique")(img)}.cast<py::array>();
   auto orig_vals = py_orig_vals.unchecked<T, 1>();
-  auto py_img_ord = py::object{np.attr("searchsorted")(py_orig_vals, img)}.cast<py::array>();
+  auto py_img_ord =
+    py::object{np.attr("searchsorted")(py_orig_vals, img)}.cast<py::array>();
   auto img_ord = py_img_ord.unchecked<size_t, 3>();
   size_t ni = img_ord.shape(0), nj = img_ord.shape(1), nk = img_ord.shape(2),
          hwi = (wi - 1) / 2, hwj = (wj - 1) / 2, hwk = (wk - 1) / 2,
          win_size = wi * wj * wk,
          nvals = orig_vals.size();
   double count_clip = clip_limit * win_size / nvals;
+  size_t count_iclip = size_t(count_clip);
   auto hist = std::unique_ptr<size_t[]>{new size_t[nvals]};
   auto py_out = py::array_t<double>{{ni, nj, nk}};
   auto out = py_out.mutable_unchecked<3>();
@@ -43,15 +45,26 @@ py::array_t<double> clahe(
         }
         // Limit contrast.
         auto val = img_ord(i0 + hwi, j0 + hwj, k0 + hwk);
-        auto clip_sum = 0.;
+        auto clip_isum = 0, n_clip = 0;
         for (auto viter = 0u; viter < val; ++viter) {
-          clip_sum += std::min<double>(hist[viter], count_clip);
+          // Avoiding fp comparisons and keeping int sums/accumulating all the
+          // clips at once later is faster.
+          if (hist[viter] > count_iclip) {
+            ++n_clip;
+          } else {
+            clip_isum += hist[viter];
+          }
         }
-        auto clip_psum =
-          clip_sum + std::min<double>(hist[val], count_clip) / 2.;
+        auto clip_psum = clip_isum + n_clip * count_clip
+                         + std::min<double>(hist[val], count_clip) / 2.;
         for (auto viter = val; viter < nvals; ++viter) {
-          clip_sum += std::min<double>(hist[viter], count_clip);
+          if (hist[viter] > count_iclip) {
+            ++n_clip;
+          } else {
+            clip_isum += hist[viter];
+          }
         }
+        auto clip_sum = clip_isum + n_clip * count_clip;
         out(i0 + hwi, j0 + hwj, k0 + hwk) =
           multiplicative
           ? clip_psum / clip_sum
