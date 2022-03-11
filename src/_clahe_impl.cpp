@@ -1,4 +1,5 @@
 #include <pybind11/numpy.h>
+#include <limits>
 
 // Adaptive Histogram Equalization and Its Variations, Pizer et al. (1987).
 
@@ -6,14 +7,14 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 using ssize_t = py::ssize_t;
 
-template<typename T>
+template<typename Data, typename Accum>
 py::array_t<double> clahe(
-  py::array_t<T> img, ssize_t wi, ssize_t wj, ssize_t wk,
+  py::array_t<Data> img, ssize_t wi, ssize_t wj, ssize_t wk,
   double clip_limit, bool multiplicative)
 {
   auto np = py::module::import("numpy");
   auto py_orig_vals = py::object{np.attr("unique")(img)}.cast<py::array>();
-  auto orig_vals = py_orig_vals.unchecked<T, 1>();
+  auto orig_vals = py_orig_vals.unchecked<Data, 1>();
   auto py_img_ord =
     py::object{np.attr("searchsorted")(py_orig_vals, img)}.cast<py::array>();
   auto img_ord = py_img_ord.unchecked<size_t, 3>();
@@ -22,8 +23,8 @@ py::array_t<double> clahe(
          win_size = wi * wj * wk,
          nvals = orig_vals.size();
   double count_clip = clip_limit * win_size / nvals;
-  size_t count_iclip = size_t(count_clip);
-  auto hist = std::unique_ptr<size_t[]>{new size_t[nvals]};
+  Accum count_iclip = Accum(count_clip);
+  auto hist = std::unique_ptr<Accum[]>{new Accum[nvals]};
   auto py_out = py::array_t<double>{{ni, nj, nk}};
   auto out = py_out.mutable_unchecked<3>();
   for (auto k0 = 0u; k0 < nk - wk + 1; ++k0) {
@@ -45,7 +46,7 @@ py::array_t<double> clahe(
         }
         // Limit contrast.
         auto val = img_ord(i0 + hwi, j0 + hwj, k0 + hwk);
-        auto clip_isum = 0, n_clip = 0;
+        auto clip_isum = Accum(0), n_clip = Accum(0);
         for (auto viter = 0u; viter < val; ++viter) {
           // Avoiding fp comparisons and keeping int sums/accumulating all the
           // clips at once later is faster.
@@ -84,10 +85,25 @@ py::array_t<double> clahe(
   return py_out;
 }
 
-template<typename T, typename M>
-void declare_api(M module) {
+template<typename Data>
+py::array_t<double> clahe_dispatch(
+  py::array_t<Data> img, ssize_t wi, ssize_t wj, ssize_t wk,
+  double clip_limit, bool multiplicative)
+{
+  // Using a smaller accumulator type is faster.
+  auto win_size = uintmax_t(wi) * uintmax_t(wj) * uintmax_t(wk);
+  return
+    (win_size <= std::numeric_limits<uint8_t>::max() ? clahe<Data, uint8_t> :
+     win_size <= std::numeric_limits<uint16_t>::max() ? clahe<Data, uint16_t> :
+     win_size <= std::numeric_limits<uint32_t>::max() ? clahe<Data, uint32_t> :
+     clahe<Data, uint64_t>)(
+       img, wi, wj, wk, clip_limit, multiplicative);
+}
+
+template<typename Data, typename Module>
+void declare_api(Module module) {
   // img is noconvert, otherwise the first overload will always be used.
-  module.def("clahe", clahe<T>,
+  module.def("clahe", clahe_dispatch<Data>,
              "img"_a.noconvert(), "wi"_a, "wj"_a, "wk"_a,
              "clip_limit"_a, "multiplicative"_a=false);
 }
