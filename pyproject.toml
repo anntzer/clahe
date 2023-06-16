@@ -1,0 +1,41 @@
+[build-system]
+requires = [
+    "pybind11>=2.6",
+    "setuptools>=61",
+    "setuptools_scm[toml]>=6.2",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clahe"
+description = "Exact contrast-limited adaptive histogram equalization"
+readme = "README.rst"
+authors = [{name = "Antony Lee"}]
+urls = {Repository = "https://github.com/anntzer/clahe"}
+license = {text = "zlib"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: zlib/libpng License",
+    "Programming Language :: Python :: 3",
+]
+requires-python = ">=3.7"
+dependencies = [
+    "numpy",
+]
+dynamic = ["version"]
+
+[tool.setuptools_scm]
+version_scheme = "post-release"
+local_scheme = "node-and-date"
+fallback_version = "0+unknown"
+
+[tool.coverage.run]
+branch = true
+source_pkgs = ["clahe"]
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning",
+    "error::DeprecationWarning:clahe",
+]
