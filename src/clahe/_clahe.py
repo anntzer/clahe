@@ -56,7 +56,7 @@ def _clahe_nd(img, win_shape, clip_limit, multiplicative=False):
     out = np.zeros_like(img, float)
 
     win_shape = np.asarray(win_shape)
-    win_size = np.product(win_shape)
+    win_size = np.prod(win_shape)
 
     count_clip = clip_limit * win_size / nvals
 
