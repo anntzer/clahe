@@ -119,4 +119,6 @@ PYBIND11_MODULE(_clahe_impl, m) {
   declare_api<int32_t>(m);
   declare_api<uint64_t>(m);
   declare_api<int64_t>(m);
+  declare_api<float>(m);
+  declare_api<double>(m);
 }

@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 
 from . import _clahe_impl
@@ -27,6 +29,10 @@ def clahe(img, win_shape, clip_limit, *, _fast=True):
     win_shape = np.broadcast_to(win_shape, img.ndim)
     largest_dim = np.argmax(win_shape)
     img = np.swapaxes(img, 0, largest_dim)
+    if img.dtype.char in "fd":
+        warnings.warn(
+            "clahe with floating point input is very slow; consider "
+            "quantizing the data to a small bitwidth integer dtype instead")
     win_shape = list(win_shape)
     win_shape[0], win_shape[largest_dim] = win_shape[largest_dim], win_shape[0]
     img = np.pad(
