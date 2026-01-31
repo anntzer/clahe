@@ -16,7 +16,7 @@ def clahe(img, win_shape, clip_limit, *, _fast=True):
         dimensionality of *img*, or it can be a single int which is used as
         size over each axis.
     clip_limit : float
-        Clipping limit.
+        Clipping limit; setting this to ``+inf`` disables clipping.
     _fast : bool, default: True
         Whether to use the fast (Cython) implementation, which is limited to
         2 or 3D inputs, or the slow (Python) implementation, which can handle

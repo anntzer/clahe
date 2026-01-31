@@ -22,8 +22,10 @@ py::array_t<double> clahe(
          hwi = (wi - 1) / 2, hwj = (wj - 1) / 2, hwk = (wk - 1) / 2,
          win_size = wi * wj * wk,
          nvals = orig_vals.size();
-  double count_clip = clip_limit * win_size / nvals;
-  Accum count_iclip = Accum(count_clip);
+  double count_clip = clip_limit == INFINITY ?
+    std::numeric_limits<double>::max() : clip_limit * win_size / nvals;
+  Accum count_iclip = clip_limit == INFINITY ?
+    std::numeric_limits<Accum>::max() : Accum(count_clip);
   auto hist = std::unique_ptr<Accum[]>{new Accum[nvals]};
   auto py_out = py::array_t<double>{{ni, nj, nk}};
   auto out = py_out.mutable_unchecked<3>();
